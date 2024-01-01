@@ -22,14 +22,16 @@ echo "IamRoleArn: $IamRoleArn"
 echo "ResourceArn: $ResourceArn"
 echo "CompleteWindowMinutes: $CompleteWindowMinutes"
 echo "LifeCycle: $Lifecycle"
-echo "Backup Start: $(date "+%F %T")"
 ) | column -t
-
 Job=$(aws backup start-backup-job \
     --backup-vault-name "$VaultName" \
     --iam-role-arn "$IamRoleArn" \
     --resource-arn "$ResourceArn" \
     --complete-window-minutes "$CompleteWindowMinutes" \
     --lifecycle "$Lifecycle")
+
+echo "------------------------------"
+echo "Backup Job Start: $(date "+%F %T")"
+echo "------------------------------"
 echo $Job | jq -r .BackupJobId
 exit 0
