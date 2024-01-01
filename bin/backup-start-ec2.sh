@@ -13,18 +13,18 @@ IamRoleArn=arn:aws:iam::${AccountId}:role/service-role/AWSBackupDefaultServiceRo
 CompleteWindowMinutes=1440 # 指定した時間以内に完了しなければキャンセル（Expire）
 Lifecycle=DeleteAfterDays=1 # バックアップの削除
 
-echo "-------------"
+echo "------------------------------"
 echo "Backup Params"
-echo "-------------"
+echo "------------------------------"
 cat <(
 echo "VaultName: $VaultName"
 echo "IamRoleArn: $IamRoleArn"
 echo "ResourceArn: $ResourceArn"
 echo "CompleteWindowMinutes: $CompleteWindowMinutes"
 echo "LifeCycle: $Lifecycle"
+echo "Backup Start: $(date "+%F %T")"
 ) | column -t
 
-echo "Backup Start: $(date +%F:%T)"
 Job=$(aws backup start-backup-job \
     --backup-vault-name "$VaultName" \
     --iam-role-arn "$IamRoleArn" \
