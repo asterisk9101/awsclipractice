@@ -2,7 +2,11 @@
 set -ueo pipefail
 
 DATE="${1:-yesterday}"
-StartTimeAfter=$(date "+%FT%TZ" --utc -d "$DATE")
+
+StartTimeAfter=$(date "+%FT00:00:00Z" --utc -d "$DATE")
+echo $StartTimeAfter
+
+
 filters="Key=StartTimeAfter,Values=$StartTimeAfter"
 
 AutomationExecutionMetadataList=$(aws ssm describe-automation-executions \
