@@ -9,6 +9,8 @@ function IsContinue(){
         return 0;;
     "PENDING")
         return 0;;
+    "RUNNING")
+        return 0;;
     *)
         return 1;;
     esac
@@ -24,6 +26,9 @@ do
     State=$(echo "$BackupJob" | jq -r .State)
 done
 
-# バックアップが稼動（RUNNING）し始めたら終了
+echo "$BackupJob" | jq
+if [ "$State" != "COMPLETED" ]; then
+    exit 1
+fi
 
 exit 0
