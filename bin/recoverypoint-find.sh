@@ -1,7 +1,12 @@
 #!/bin/bash
 set -ueo pipefail
 
-NAME="$1"
+NAME="$1:-Default"
+
+if [ "$NAME" == "Default" ]; then
+    aws backup list-backup-vaults | jq -r '.BackupVaultList[] | select(.BackupVaultName != "Default") | .BackupVaultName'
+    exit 0
+fi
 
 list=$(aws backup list-recovery-points-by-backup-vault --backup-vault-name "$NAME")
 header="RecoveryPointArn   Status ResourceId                     ResourceType  CreationDate  DeleteAt"
