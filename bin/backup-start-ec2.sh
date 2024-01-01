@@ -7,6 +7,25 @@ DeleteAfterDays="${2:-1}"
 VaultName="$NAME"
 Instances=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=$NAME" | jq -c .Reservations[])
 InstanceId=$(echo "$Instances" | jq -r .Instances[].InstanceId)
+
+InstanceCount=$(echo "$InstanceId" | wc -l)
+if [ "$InstanceCount" -eq 0 ]; then
+    echo "InstanceId Not Found: $NAME"
+    exit 1
+fi
+if [ "$InstanceCount" -ne 1 ]; then
+    echo "InstanceId Not Uniq: $InstanceCount"
+    exit 1
+fi
+
+# Vault が無ければ作る
+BackupVault=$(aws backup list-backup-vaults | jq -c '.BackupVaultList[] | select(.BackupVaultName == "'${NAME}'")')
+if [ -z $BackupVault ]; then
+    echo -n "Create Backup Vault: "
+    $res=$(aws backup create-backup-vaults --backup-vault-name "$NAME")
+    echo "$res" | jq -r -c ".BackupVaultArn"
+fi
+
 Region=$(echo "$Instances" | jq -r .Instances[].Placement.AvailabilityZone | sed 's/.$//')
 AccountId=$(echo "$Instances" | jq -r .OwnerId)
 ResourceArn=arn:aws:ec2:${Region}:${AccountId}:instance/${InstanceId}
