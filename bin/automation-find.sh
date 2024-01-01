@@ -11,7 +11,7 @@ AutomationExecutionMetadataList=$(aws ssm describe-automation-executions \
     | jq -c .AutomationExecutionMetadataList[])
 
 headers="AutomationExecutionId,DocumentName,Status,StartTime,EndTime,ExecutedBy"
-select='.AutomationExecutionId,.DocumentName,.AutomationExecutionStatus,(.ExecutionStartTime[0:19] | sub("T";" ")),(.ExecutionEndTime[0:19] | sub("T";" ")),.ExecutedBy'
+select='.AutomationExecutionId,.DocumentName,.AutomationExecutionStatus,.ExecutionStartTime[0:19],.ExecutionEndTime[0:19],.ExecutedBy'
 query=". | [$select] | @csv"
 
 cat <(echo "$headers"; echo "$AutomationExecutionMetadataList" | jq -c -r "$query") | tr -d '"' | column -t -s ,
