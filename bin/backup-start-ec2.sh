@@ -32,6 +32,7 @@ Job=$(aws backup start-backup-job \
 
 echo "------------------------------"
 echo "Backup Job Start: $(date "+%F %T")"
-echo "------------------------------"
+echo -n "Backup Job Id: "
 echo $Job | jq -r .BackupJobId
+echo "------------------------------"
 exit 0

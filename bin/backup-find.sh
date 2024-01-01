@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ueo pipefail
 
-DATE="${1:-today}"
+DATE="${1:-yesterday}"
 
 BackupJobs=$(aws backup list-backup-jobs --by-created-after $(date "+%FT%T" --utc -d "$DATE"))
 
