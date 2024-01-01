@@ -1,9 +1,9 @@
 #!/bin/bash
 set -ueo pipefail
 
-FORMAT="${1:-%F}"
+DATE="${1:-today}"
 
-BackupJobs=$(aws backup list-backup-jobs --by-created-after $(date --utc +$FORMAT))
+BackupJobs=$(aws backup list-backup-jobs --by-created-after $(date "+%F %T"--utc -d "$DATE"))
 
 headers="BackupJobId,State,BackupVaultName,ResourceArn,StatusMessage,ResourceType,CreationDate"
 select='.BackupJobId,.State,.BackupVaultName,(.ResourceArn | sub(".*:";"")),.StatusMessage,.ResourceType,(.CreationDate[0:19] | sub("T";" "))'
