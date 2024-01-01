@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ueo pipefail
 
-NAME="$1:-Default"
+NAME="${1:-Default}"
 
 if [ "$NAME" == "Default" ]; then
     aws backup list-backup-vaults | jq -r '.BackupVaultList[] | select(.BackupVaultName != "Default") | .BackupVaultName'
