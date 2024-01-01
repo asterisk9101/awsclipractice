@@ -1,6 +1,7 @@
 #!/bin/bash
 set -ueo pipefail
 CommandId="$1"
+WaitInterval="${2:-1}"
 
 function IsContinue(){
     case "$1" in
@@ -21,7 +22,7 @@ Status=$(aws ssm list-command-invocations \
 
 while IsContinue "$Status"
 do
-    sleep 1
+    sleep "$WaitInterval"
     Status=$(aws ssm list-command-invocations \
         --command-id "$CommandId" \
         | jq -r .CommandInvocations[0].Status)
