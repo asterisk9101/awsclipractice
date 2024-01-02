@@ -1,10 +1,20 @@
 #!/bin/bash
 set -ueo pipefail
 
-Instances=$(aws ec2 describe-instances --filters "$@" | jq -c ".Reservations[]")
-headers="tag:Name                       instance-id  state       instance-type launch-time platform-details"
-select="(.Tags | from_entries | .Name),.InstanceId, .State.Name,.InstanceType,.LaunchTime,.PlatformDetails"
-query=".Instances[] | [$select] | @tsv"
-cat <(echo "$headers"; echo "$Instances" | jq -c -r "$query") | column -t
+Resources=$(aws ec2 describe-instances --filters "$@" | jq -c ".Reservations[].Instances[]")
+
+queryfile="$(dirname $0)/$(basename -s .sh $0).jq"
+table=$(echo "$Resources" | jq -c -r -f "$queryfile")
+
+if [ -z "$table" ]; then
+    echo "Resource Not Found"
+    exit 1
+fi
+
+keys=$(echo "$table" | jq -s -r -c ".[0] | keys" | sed -e 's/\[/[./' -e 's/,/,./g')
+cat <(
+    echo "$table" | jq -s -r ".[0] | keys | @csv"
+    echo "$table" | jq -r "$keys | @csv"
+) | tr -d '"' | column -s , -t
 
 exit 0
