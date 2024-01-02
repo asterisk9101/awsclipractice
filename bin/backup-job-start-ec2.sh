@@ -1,12 +1,12 @@
 #!/bin/bash
 set -ueo pipefail
 
-NAME="$1"
+InstanceId="$1"
 DeleteAfterDays="${2:-1}"
 
+Instances=$(ec2-find-by-instance-id.sh "$InstanceId")
+NAME=$(ec2-get-instance-tag-names.sh "$Instances")
 VaultName="$NAME"
-Instances=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=$NAME" | jq -c .Reservations[])
-InstanceId=$(echo "$Instances" | jq -r .Instances[].InstanceId)
 
 InstanceCount=$(echo "$InstanceId" | wc -l)
 if [ "$InstanceCount" -eq 0 ]; then
@@ -20,39 +20,26 @@ fi
 
 # Vault が無ければ作る
 BackupVault=$(aws backup list-backup-vaults | jq -c '.BackupVaultList[] | select(.BackupVaultName == "'${NAME}'")')
-if [ -z $BackupVault ]; then
+if [ -z "$BackupVault" ]; then
+    echo "$BackupVault"
+    exit 0
     echo -n "Create Backup Vault: "
-    $res=$(aws backup create-backup-vaults --backup-vault-name "$NAME")
+    res=$(aws backup create-backup-vault --backup-vault-name "$NAME")
     echo "$res" | jq -r -c ".BackupVaultArn"
 fi
 
-Region=$(echo "$Instances" | jq -r .Instances[].Placement.AvailabilityZone | sed 's/.$//')
-AccountId=$(echo "$Instances" | jq -r .OwnerId)
+Region=$(echo "$Instances" | jq -r .Reservations[].Instances[].Placement.AvailabilityZone | sed 's/.$//')
+AccountId=$(echo "$Instances" | jq -r .Reservations[].OwnerId)
 ResourceArn=arn:aws:ec2:${Region}:${AccountId}:instance/${InstanceId}
 IamRoleArn=arn:aws:iam::${AccountId}:role/service-role/AWSBackupDefaultServiceRole
 CompleteWindowMinutes=1440 # 指定した時間以内に完了しなければキャンセル（Expire）
 Lifecycle=DeleteAfterDays=$DeleteAfterDays # バックアップの削除
 
-echo "------------------------------"
-echo "Backup Params"
-echo "------------------------------"
-cat <(
-echo "VaultName: $VaultName"
-echo "IamRoleArn: $IamRoleArn"
-echo "ResourceArn: $ResourceArn"
-echo "CompleteWindowMinutes: $CompleteWindowMinutes"
-echo "LifeCycle: $Lifecycle"
-) | column -t
 Job=$(aws backup start-backup-job \
     --backup-vault-name "$VaultName" \
     --iam-role-arn "$IamRoleArn" \
     --resource-arn "$ResourceArn" \
     --complete-window-minutes "$CompleteWindowMinutes" \
     --lifecycle "$Lifecycle")
-
-echo "------------------------------"
-echo "Backup Job Start: $(date "+%F %T")"
-echo -n "Backup Job Id: "
 echo $Job | jq -r .BackupJobId
-echo "------------------------------"
 exit 0
