@@ -26,4 +26,6 @@ done
 
 # バックアップが稼動（RUNNING）し始めたら終了
 
+echo "$BackupJob" | jq .
+
 exit 0
