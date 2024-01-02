@@ -1,4 +1,5 @@
-{
+#!/usr/bin/jq -rf
+.BackupJobs[] | {
     "1.BackupJobId": .BackupJobId,
     "2.State": .State,
     "3.BackupVaultName": .BackupVaultName,

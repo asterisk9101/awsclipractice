@@ -5,10 +5,9 @@ DATE="${1:-24} hours ago"
 StartTimeAfter=$(date "+%FT%TZ" --utc -d "$DATE")
 filters="Key=StartTimeAfter,Values=$StartTimeAfter"
 
-Jobs=$(aws ssm describe-automation-executions --filters "$filters" | jq -c .AutomationExecutionMetadataList[])
+Jobs=$(aws ssm describe-automation-executions --filters "$filters")
 
-queryfile="$(dirname $0)/$(basename -s .sh $0).jq"
-table=$(echo "$Jobs" | jq -c -r -f "$queryfile")
+table=$(echo "$Jobs" | automation-list.jq)
 
 if [ -z "$table" ]; then
     echo "Job Not Found"

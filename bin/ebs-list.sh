@@ -1,10 +1,9 @@
 #!/bin/bash
 set -ueo pipefail
 
-Resources=$(aws ec2 describe-volumes --filters "$@" | jq -c .Volumes[])
+Resources=$(aws ec2 describe-volumes --filters "$@")
 
-queryfile="$(dirname $0)/$(basename -s .sh $0).jq"
-table=$(echo "$Resources" | jq -c -r -f "$queryfile")
+table=$(echo "$Resources" | ebs-list.jq)
 
 if [ -z "$table" ]; then
     echo "Resource Not Found"

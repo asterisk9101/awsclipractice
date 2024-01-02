@@ -5,10 +5,9 @@ DATE="${1:-24} hours ago"
 InvokedAfter=$(date "+%FT%TZ" --utc -d "$DATE")
 filters="key=InvokedAfter,value=$InvokedAfter"
 
-Jobs=$(aws ssm list-commands --filters "$filters" | jq -c .Commands[])
+Jobs=$(aws ssm list-commands --filters "$filters")
 
-queryfile="$(dirname $0)/$(basename -s .sh $0).jq"
-table=$(echo "$Jobs" | jq -c -r -f "$queryfile")
+table=$(echo "$Jobs" | runcommand-list.jq)
 
 if [ -z "$table" ]; then
     echo "Job Not Found"

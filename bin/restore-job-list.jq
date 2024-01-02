@@ -1,4 +1,5 @@
-{
+#!/usr/bin/jq -rf
+.RestoreJobs[] | {
     "1.RestoreJobId": .RestoreJobId,
     "2.Status": .Status,
     "3.PercentDone": .PercentDone,

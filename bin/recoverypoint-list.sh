@@ -8,9 +8,8 @@ if [ "$NAME" == "Default" ]; then
     exit 0
 fi
 
-Points=$(aws backup list-recovery-points-by-backup-vault --backup-vault-name "$NAME" | jq -c .RecoveryPoints[])
-queryfile="$(dirname $0)/$(basename -s .sh $0).jq"
-table=$(echo "$Points" | jq -c -r -f "$queryfile")
+Points=$(aws backup list-recovery-points-by-backup-vault --backup-vault-name "$NAME")
+table=$(echo "$Points" | recoverypoint-list.jq)
 
 if [ -z "$table" ]; then
     echo "Job Not Found"

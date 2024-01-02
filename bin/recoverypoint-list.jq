@@ -1,4 +1,5 @@
-{
+#!/usr/bin/jq -rf
+.RecoveryPoints[] | {
     "1.RecoveryPointArn": .RecoveryPointArn,
     "2.Status": .Status,
     "3.ResourceArn": (.ResourceArn | sub(".*:";"") ),

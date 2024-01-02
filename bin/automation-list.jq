@@ -1,4 +1,5 @@
-{
+#!/usr/bin/jq -rf
+.AutomationExecutionMetadataList[] | {
     "1.AutomationExecutionId":.AutomationExecutionId,
     "2.DocumentName":.DocumentName,
     "3.AutomationExecutionStatus":.AutomationExecutionStatus,

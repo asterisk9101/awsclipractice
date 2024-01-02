@@ -1,4 +1,5 @@
-{
+#!/usr/bin/jq -rf
+.Commands[] | {
     "1.CommandId": .CommandId,
     "2.Status": .Status,
     "3.RequestedDateTime": .RequestedDateTime,

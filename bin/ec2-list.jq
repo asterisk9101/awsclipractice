@@ -1,4 +1,5 @@
-{
+#!/usr/bin/jq -rf
+.Reservations[].Instances[] | {
     "1.tag:Name":         (.Tags | from_entries | .Name),
     "2.instance-id":      .InstanceId,
     "3.state":            .State.Name,

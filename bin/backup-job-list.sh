@@ -4,10 +4,9 @@ set -ueo pipefail
 DATE="${1:-24} hours ago"
 CreatedAfter=$(date "+%FT%TZ" --utc -d "$DATE")
 
-Jobs=$(aws backup list-backup-jobs --by-created-after "$CreatedAfter" | jq -c .BackupJobs[])
+Jobs=$(aws backup list-backup-jobs --by-created-after "$CreatedAfter")
 
-queryfile="$(dirname $0)/$(basename -s .sh $0).jq"
-table=$(echo "$Jobs" | jq -c -r -f "$queryfile")
+table=$(echo "$Jobs" | backup-job-list.jq)
 
 if [ -z "$table" ]; then
     echo "Job Not Found"

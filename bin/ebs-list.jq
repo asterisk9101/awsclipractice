@@ -1,4 +1,5 @@
-{
+#!/usr/bin/jq -rf
+.Volumes[] | {
     "1.tag:Name":    (.Tags | from_entries | .Name),
     "2.volume-id":   .VolumeId,
     "3.state":       .State,
