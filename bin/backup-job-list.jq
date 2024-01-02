@@ -1,9 +1,9 @@
 {
-    "BackupJobId": .BackupJobId,
-    "State": .State,
-    "BackupVaultName": .BackupVaultName,
-    "ResourceArn": (.ResourceArn | sub(".*:";"")),
-    "StatusMessage": .StatusMessage,
-    "ResourceType": .ResourceType,
-    "CreationDate": (.CreationDate[0:19] | sub("T";" "))
+    "1.BackupJobId": .BackupJobId,
+    "2.State": .State,
+    "3.BackupVaultName": .BackupVaultName,
+    "4.ResourceArn": (.ResourceArn | sub(".*:";"")),
+    "5.StatusMessage": .StatusMessage,
+    "6.ResourceType": .ResourceType,
+    "7.CreationDate": (.CreationDate[0:19] | sub("T";" "))
 }
