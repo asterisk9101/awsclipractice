@@ -1,18 +1,26 @@
 #!/bin/bash
 set -ueo pipefail
 
-DATE="${1:-yesterday}"
-
+DATE="${1:-24} hours ago"
 StartTimeAfter=$(date "+%FT%TZ" --utc -d "$DATE")
 filters="Key=StartTimeAfter,Values=$StartTimeAfter"
 
-AutomationExecutionMetadataList=$(aws ssm describe-automation-executions \
+Jobs=$(aws ssm describe-automation-executions \
     --filters "$filters" \
     | jq -c .AutomationExecutionMetadataList[])
 
-headers="AutomationExecutionId,DocumentName,Status,StartTime,EndTime,ExecutedBy"
-select='.AutomationExecutionId,.DocumentName,.AutomationExecutionStatus,.ExecutionStartTime[0:19],.ExecutionEndTime[0:19],.ExecutedBy'
-query=". | [$select] | @csv"
+queryfile="$(dirname $0)/$(basename -s .sh $0).jq"
+table=$(echo "$Jobs" | jq -c -r -f "$queryfile")
 
-cat <(echo "$headers"; echo "$AutomationExecutionMetadataList" | jq -c -r "$query") | tr -d '"' | column -t -s ,
+if [ -z "$table" ]; then
+    echo "Job Not Found"
+    exit 1
+fi
+
+keys=$(echo "$table" | jq -s -r -c ".[0] | keys" | sed -e 's/\[/[./' -e 's/,/,./g')
+cat <(
+    echo "$table" | jq -s -r ".[0] | keys | @csv"
+    echo "$table" | jq -r "$keys | @csv"
+) | tr -d '"' | column -s , -t
+
 exit 0
