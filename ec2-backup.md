@@ -2,35 +2,54 @@
 
 ```bash
 # 環境変数の設定
-export AWS_PROFILE=tada
+export AWS_PROFILE=$PROFILE
 
-# instance id を確認する
-ec2-find.sh "Name=tag:Name,Values=assumetest"
-ssm-automation-stop-ec2.sh
+# インスタンス id を確認する
+InstanceIds=$(ec2-find-by-name-tag.sh "$NAME")
+echo "$InstanceIds"
+
+# 複数のインスタンスがないことを確認する
+InstanceId="$InstanceIds"
+echo $InstanceId
 
 # インスタンスのサービスを停止する
-ssm-runcmd-shell.sh id svc-stop.sh
-ssm-runcmd-find.sh
-ssm-runcmd-wait.sh
+CommandId=$(runcommand-shell.sh "$InstanceId" svc-stop.sh)
+echo "$CommandId"
+runcommand-wait.sh "$CommandId"
+runcommand-list.sh
 
 # インスタンスを停止する
-ssm-automation-ec2stop.sh id
-ssm-automation-find.sh
-ssm-automation-wait.sh id
+AutomationId=$(automation-stop-ec2.sh "$InstanceId")
+echo "$AutomationId"
+automation-wait.sh "$AutomationId"
+automation-list.sh
 
-# instance id が停止していることを確認する
-ec2-find.sh Name=tag:Name,Values=hoge
+# インスタンスが停止していることを確認する
+ec2-list.sh "Name=instance-id,Values=$InstanceId"
 
 # バックアップを実行（並列したい）
-backup-ec2.sh i-hoge
-
-# 待つ/結果の確認
-backup-list-job.sh job-id
+BackupJobId=$(backup-job-start-ec2.sh "$InstanceId")
+echo "$BackupJobId"
+backup-job-wait.sh "$BackupJobId"
+backup-job-list.sh
 
 # インスタンスを起動する
-ssm-automation-ec2start.sh
+AutomationId=$(automation-start-ec2.sh "$InstanceId")
+echo "$AutomationId"
+automation-wait.sh "$AutomationId"
+automation-list.sh
 
 # インスタンスのサービスを起動する
-ssm-runcmd-sh.sh id svc-start.sh
-ssm-runcmd-wait.sh
+CommandId=$(runcommand-shell.sh "$InstanceId" svc-start.sh)
+echo "$CommandId"
+runcommand-wait.sh "$CommandId"
+runcommand-list.sh
+```
+
+```bash
+recoverypoint-copy-start.sh 
+recoverypoint-copy-start-parallel.sh
+recoverypoint-copy-wait.sh
+recoverypoint-copy-list.sh
+recoverypoint-copy-info.sh
 ```
