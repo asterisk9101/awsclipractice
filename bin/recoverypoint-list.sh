@@ -8,10 +8,20 @@ if [ "$NAME" == "Default" ]; then
     exit 0
 fi
 
-list=$(aws backup list-recovery-points-by-backup-vault --backup-vault-name "$NAME")
-header="RecoveryPointArn   Status ResourceId                     ResourceType  CreationDate  DeleteAt"
-select='.RecoveryPointArn,.Status,(.ResourceArn | sub(".*:";"") ),.ResourceType,.CreationDate[0:19],.CalculatedLifecycle.DeleteAt[0:19]'
-query=".RecoveryPoints[] | [$select] | @tsv"
-cat <(echo $header; echo $list | jq -r "$query") | column -t
+Points=$(aws backup list-recovery-points-by-backup-vault --backup-vault-name "$NAME" | jq -c .RecoveryPoints[])
+queryfile="$(dirname $0)/$(basename -s .sh $0).jq"
+table=$(echo "$Points" | jq -c -r -f "$queryfile")
+
+if [ -z "$table" ]; then
+    echo "Job Not Found"
+    exit 1
+fi
+
+keys=$(echo "$table" | jq -s -r -c ".[0] | keys" | sed -e 's/\[/[./' -e 's/,/,./g')
+cat <(
+    echo "$table" | jq -s -r ".[0] | keys | @csv"
+    echo "$table" | jq -r "$keys | @csv"
+) | tr -d '"' | column -s , -t
+
 
 exit 0
