@@ -1,10 +1,10 @@
 #!/usr/bin/jq -rf
 .Reservations[].Instances[] | {
-    "1.tag:Name":         (.Tags | from_entries | .Name),
-    "2.instance-id":      .InstanceId,
-    "3.state":            .State.Name,
-    "4.instance-type":    .InstanceType,
-    "5.launch-time":      .LaunchTime,
-    "6.platform-detail":  .PlatformDetails,
-    "7.availability-zone":.Placement.AvailabilityZone
+    "1.instance-id":      .InstanceId,
+    "2.state":            .State.Name,
+    "3.instance-type":    .InstanceType,
+    "4.launch-time":      .LaunchTime,
+    "5.platform-detail":  .PlatformDetails,
+    "6.availability-zone":.Placement.AvailabilityZone,
+    "7.Tags":            (.Tags | sort_by(.Key) | reduce .[] as $n (""; . + $n.Key + "=" + $n.Value + ";"))
 }

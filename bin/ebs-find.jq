@@ -6,5 +6,6 @@
     "4.create-time": .CreateTime[0:19],
     "5.volume-type": .VolumeType,
     "6.volume-type": .AvailabilityZone,
-    "7.Encrypted": .Encrypted
+    "7.Encrypted":   .Encrypted,
+    "8.Tags":        (.Tags | sort_by(.Key) | reduce .[] as $n (""; . + $n.Key + "=" + $n.Value + ";"))
 }
