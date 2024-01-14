@@ -15,7 +15,7 @@ function info(){
 }
 
 function error(){
-    format "ERROR" "$1" "">&2
+    format "ERROR" "$1" >&2
     exit 1
 }
 
@@ -67,7 +67,7 @@ info "CompleteWindowMinutes=$CompleteWindowMinutes"
 info "Lifecycle=$Lifecycle"
 info "Tags=$Tags"
 
-info "バックアップジョブを開始します"
+info "バックアップジョブを作成します"
 Job=$(aws --profile "$PROFILE" backup start-backup-job \
     --backup-vault-name "$VaultName" \
     --iam-role-arn "$IamRoleArn" \
@@ -76,18 +76,18 @@ Job=$(aws --profile "$PROFILE" backup start-backup-job \
     --lifecycle "$Lifecycle" \
     --recovery-point-tags "$Tags")
 JobId="$(echo "$Job" | jq -r .BackupJobId)"
-info "バックアップジョブを開始しました: $JobId"
+info "バックアップジョブを作成しました: $JobId"
 
 # 待つ処理
 BackupJob=$(aws --profile "$PROFILE" backup describe-backup-job --backup-job-id "$JobId")
 State=$(echo "$BackupJob" | jq -r .State)
 while IsRunning "$State"
 do
-    info "バックアップ待機中"
+    info "バックアップ開始まで待機"
     sleep $(("$RANDOM" % 3 + 10)) # API アクセス制限にかからないように少し分散する
     BackupJob=$(aws --profile "$PROFILE" backup describe-backup-job --backup-job-id "$JobId")
     State=$(echo "$BackupJob" | jq -r .State)
 done
 
-echo "$BackupJob" | jq .
 info "バックアップが開始されました"
+echo "$BackupJob" | jq .
