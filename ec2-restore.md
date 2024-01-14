@@ -1,28 +1,19 @@
 # リストア手順
 
 ```bash
-# instance id を確認
-ec2-find.sh
+# 現在のインスタンスのパラメータを保存
+dump-ec2-params.sh $profile $hostname
 
-# instance の情報を保存しておく
-ec2-info.sh id > json # instance.json, ebs.json, eni.json
+# リカバリーポイントがあることを確認
+arn=$(get-ec2-arn-by-hostname.sh $profile $hostname)
+aws backup list-recovery-points-by-resource --resource-arn "$arn" | flatten-list-recoverypoint.jq | table.sh
 
-# instance 削除
-ec2-terminate id
+# メタデータを出力して調整する
 
-# リカバリーポイントを確認する
-restore-find.sh vault
-restore-info.sh recovery-point-id
+# インスタンスを削除する
+delete-ec2.sh hostname
 
-# リストアする
-restore-ec2.sh recovery-point-id
+# リカバリーポイントを復旧する
 
-# リストアされた instance id を探す
-ec2-list.sh "Name=launch-time,Values=$(date '+%F*')"
 
-# パラメータを復元する
-ec2-copy-param from-id to-id
-
-# パラメータが復元されていることを確認する
-ec2-info.sh id > json # instance.json, instance-ebs.json, instance-eni.json
 ```
